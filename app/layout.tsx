@@ -21,13 +21,13 @@ const jp = Noto_Sans_JP({
 
 export const metadata: Metadata = {
   title: "Kana Free",
-  description: "Pratique hiragana e katakana digitando o romaji.",
+  description: "Practice hiragana and katakana by typing romaji.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="pt-BR"
+      lang="en"
       className={`${display.variable} ${sans.variable} ${jp.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>

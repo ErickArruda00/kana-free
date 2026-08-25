@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import KanaCharts from "@/components/kana-chart";
 import { kanaByMode, type KanaMode } from "@/data/kana";
+import { defaultLocale, messages, type Locale } from "@/data/i18n";
 
 function pickChar(
   dict: Record<string, string>,
@@ -38,7 +39,43 @@ function labelFor(modes: KanaMode[]) {
   return modes[0] === "hiragana" ? "Hiragana" : "Katakana";
 }
 
+function LanguageSwitch({
+  locale,
+  onChange,
+}: {
+  locale: Locale;
+  onChange: (locale: Locale) => void;
+}) {
+  const t = messages[locale];
+
+  return (
+    <div className="lang-switch" role="group" aria-label={t.language}>
+      <button
+        type="button"
+        className={`lang-btn ${locale === "en" ? "is-active" : ""}`}
+        aria-pressed={locale === "en" ? "true" : "false"}
+        aria-label={t.english}
+        title={t.english}
+        onClick={() => onChange("en")}
+      >
+        <span aria-hidden="true">🇺🇸</span>
+      </button>
+      <button
+        type="button"
+        className={`lang-btn ${locale === "pt-BR" ? "is-active" : ""}`}
+        aria-pressed={locale === "pt-BR" ? "true" : "false"}
+        aria-label={t.portuguese}
+        title={t.portuguese}
+        onClick={() => onChange("pt-BR")}
+      >
+        <span aria-hidden="true">🇧🇷</span>
+      </button>
+    </div>
+  );
+}
+
 export default function Practice() {
+  const [locale, setLocale] = useState<Locale>(defaultLocale);
   const [selected, setSelected] = useState<Record<KanaMode, boolean>>({
     hiragana: false,
     katakana: false,
@@ -57,11 +94,16 @@ export default function Practice() {
   const [totalCount, setTotalCount] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const t = messages[locale];
   const dict = activeModes ? mergeModes(activeModes) : null;
   const selectedModes = (Object.keys(selected) as KanaMode[]).filter(
     (mode) => selected[mode],
   );
   const canStart = selectedModes.length > 0;
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   useEffect(() => {
     if (!activeModes) return;
@@ -139,86 +181,94 @@ export default function Practice() {
     }, ok ? 450 : 900);
   }
 
+  const langSwitch = (
+    <LanguageSwitch locale={locale} onChange={setLocale} />
+  );
+
   if (!activeModes || !dict) {
     return (
-      <div className="home">
-        <div className="menu">
-          <p className="brand">Kana Free</p>
-          <h1 className="headline">Pratique o som de cada caractere</h1>
-          <p className="lede">
-            Selecione um ou mais silabários e digite o romaji correspondente.
-          </p>
-          <div className="cta-row" role="group" aria-label="Silabários">
-            <button
-              type="button"
-              className={`choice ${selected.hiragana ? "is-selected" : ""}`}
-              aria-pressed={selected.hiragana ? "true" : "false"}
-              onClick={() => toggle("hiragana")}
-            >
-              Hiragana
-            </button>
-            <button
-              type="button"
-              className={`choice ${selected.katakana ? "is-selected" : ""}`}
-              aria-pressed={selected.katakana ? "true" : "false"}
-              onClick={() => toggle("katakana")}
-            >
-              Katakana
-            </button>
-          </div>
-          <div className="option-block">
-            <p className="option-label">Repetir</p>
-            <div className="cta-row is-tight" role="group" aria-label="Repetição">
+      <>
+        {langSwitch}
+        <div className="home">
+          <div className="menu">
+            <p className="brand">Kana Free</p>
+            <h1 className="headline">{t.headline}</h1>
+            <p className="lede">{t.lede}</p>
+            <div className="cta-row" role="group" aria-label={t.syllabaries}>
               <button
                 type="button"
-                className={`choice ${repeatCorrect ? "is-selected" : ""}`}
-                aria-pressed={repeatCorrect ? "true" : "false"}
-                onClick={() => setRepeatCorrect(true)}
+                className={`choice ${selected.hiragana ? "is-selected" : ""}`}
+                aria-pressed={selected.hiragana ? "true" : "false"}
+                onClick={() => toggle("hiragana")}
               >
-                Sim
+                Hiragana
               </button>
               <button
                 type="button"
-                className={`choice ${!repeatCorrect ? "is-selected" : ""}`}
-                aria-pressed={!repeatCorrect ? "true" : "false"}
-                onClick={() => setRepeatCorrect(false)}
+                className={`choice ${selected.katakana ? "is-selected" : ""}`}
+                aria-pressed={selected.katakana ? "true" : "false"}
+                onClick={() => toggle("katakana")}
               >
-                Não
+                Katakana
               </button>
             </div>
+            <div className="option-block">
+              <p className="option-label">{t.repeat}</p>
+              <div className="cta-row is-tight" role="group" aria-label={t.repeat}>
+                <button
+                  type="button"
+                  className={`choice ${repeatCorrect ? "is-selected" : ""}`}
+                  aria-pressed={repeatCorrect ? "true" : "false"}
+                  onClick={() => setRepeatCorrect(true)}
+                >
+                  {t.yes}
+                </button>
+                <button
+                  type="button"
+                  className={`choice ${!repeatCorrect ? "is-selected" : ""}`}
+                  aria-pressed={!repeatCorrect ? "true" : "false"}
+                  onClick={() => setRepeatCorrect(false)}
+                >
+                  {t.no}
+                </button>
+              </div>
+            </div>
+            <button
+              type="button"
+              className={`cta ${canStart ? "" : "is-disabled"}`}
+              onClick={start}
+              aria-disabled={canStart ? "false" : "true"}
+            >
+              {t.start}
+            </button>
           </div>
-          <button
-            type="button"
-            className={`cta ${canStart ? "" : "is-disabled"}`}
-            onClick={start}
-            aria-disabled={canStart ? "false" : "true"}
-          >
-            Começar
-          </button>
+          <KanaCharts />
         </div>
-        <KanaCharts />
-      </div>
+      </>
     );
   }
 
   if (done) {
     return (
-      <div className="session">
-        <header className="session-bar">
-          <button type="button" className="back" onClick={goHome}>
-            Voltar
+      <>
+        {langSwitch}
+        <div className="session">
+          <header className="session-bar">
+            <button type="button" className="back" onClick={goHome}>
+              {t.back}
+            </button>
+            <p className="mode-label">{labelFor(activeModes)}</p>
+            <p className="score">
+              {correctCount}/{totalCount}
+            </p>
+          </header>
+          <p className="done-title">{t.doneTitle}</p>
+          <p className="done-text">{t.doneText}</p>
+          <button type="button" className="cta" onClick={goHome}>
+            {t.backHome}
           </button>
-          <p className="mode-label">{labelFor(activeModes)}</p>
-          <p className="score">
-            {correctCount}/{totalCount}
-          </p>
-        </header>
-        <p className="done-title">Sessão completa</p>
-        <p className="done-text">Você acertou todos os caracteres desta rodada.</p>
-        <button type="button" className="cta" onClick={goHome}>
-          Voltar ao início
-        </button>
-      </div>
+        </div>
+      </>
     );
   }
 
@@ -229,53 +279,60 @@ export default function Practice() {
       : Object.keys(dict).length - solved.size;
 
   return (
-    <div className="session">
-      <header className="session-bar">
-        <button type="button" className="back" onClick={goHome}>
-          Voltar
-        </button>
-        <p className="mode-label">{labelFor(activeModes)}</p>
-        <p className="score">
-          {correctCount}/{totalCount}
-          {remaining !== null ? ` · ${remaining}` : ""}
+    <>
+      {langSwitch}
+      <div className="session">
+        <header className="session-bar">
+          <button type="button" className="back" onClick={goHome}>
+            {t.back}
+          </button>
+          <p className="mode-label">{labelFor(activeModes)}</p>
+          <p className="score">
+            {correctCount}/{totalCount}
+            {remaining !== null ? ` · ${remaining}` : ""}
+          </p>
+        </header>
+
+        <div
+          key={char}
+          className={`glyph ${feedback === "correct" ? "is-correct" : ""} ${feedback === "wrong" ? "is-wrong" : ""}`}
+        >
+          {char}
+        </div>
+
+        <form className="answer-form" onSubmit={submit}>
+          <label className="sr-only" htmlFor="romaji">
+            Romaji
+          </label>
+          <input
+            id="romaji"
+            ref={inputRef}
+            className="answer-input"
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            placeholder="romaji"
+            autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+            disabled={feedback !== "idle"}
+          />
+          <button
+            type="submit"
+            className="submit"
+            disabled={feedback !== "idle"}
+          >
+            {t.check}
+          </button>
+        </form>
+
+        <p
+          className={`hint ${feedback === "wrong" ? "is-visible" : ""}`}
+          aria-live="polite"
+        >
+          {feedback === "wrong" ? expected : "\u00a0"}
         </p>
-      </header>
-
-      <div
-        key={char}
-        className={`glyph ${feedback === "correct" ? "is-correct" : ""} ${feedback === "wrong" ? "is-wrong" : ""}`}
-      >
-        {char}
       </div>
-
-      <form className="answer-form" onSubmit={submit}>
-        <label className="sr-only" htmlFor="romaji">
-          Romaji
-        </label>
-        <input
-          id="romaji"
-          ref={inputRef}
-          className="answer-input"
-          value={answer}
-          onChange={(e) => setAnswer(e.target.value)}
-          placeholder="romaji"
-          autoComplete="off"
-          autoCapitalize="off"
-          autoCorrect="off"
-          spellCheck={false}
-          disabled={feedback !== "idle"}
-        />
-        <button type="submit" className="submit" disabled={feedback !== "idle"}>
-          Verificar
-        </button>
-      </form>
-
-      <p
-        className={`hint ${feedback === "wrong" ? "is-visible" : ""}`}
-        aria-live="polite"
-      >
-        {feedback === "wrong" ? expected : "\u00a0"}
-      </p>
-    </div>
+    </>
   );
 }
