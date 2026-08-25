@@ -1,0 +1,17 @@
+node_modules
+.next
+.git
+.gitignore
+*.md
+AGENTS.md
+CLAUDE.md
+Dockerfile
+docker-compose.yml
+.dockerignore
+.eslintrc*
+eslint.config.mjs
+.next-env.d.ts
+npm-debug.log*
+.DS_Store
+.vercel
+coverage

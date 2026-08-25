@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kana Free
 
-## Getting Started
+App to practice **hiragana** and **katakana**: a Japanese character appears and you type its sound in romaji.
 
-First, run the development server:
+No login and no saved progress — everything runs in the browser.
+
+## Features
+
+- Choose hiragana, katakana, or both
+- Option to repeat or skip characters you already got right in the session
+- Interactive charts with romaji on hover
+- Accent columns (dakuten/handakuten) that expand on mouse over
+
+## Local development
+
+Requirements: Node.js 20+ and npm.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Other commands:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build   # production build
+npm run start   # run the local production build
+npm run lint    # ESLint
+```
 
-## Learn More
+## Docker
 
-To learn more about Next.js, take a look at the following resources:
+The container starts the app automatically on port 3000:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+docker compose up --build -d
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open [http://localhost:3000](http://localhost:3000).
 
-## Deploy on Vercel
+To stop:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+docker compose down
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Stack
+
+- [Next.js](https://nextjs.org) 16
+- React 19
+- TypeScript
+- Tailwind CSS 4

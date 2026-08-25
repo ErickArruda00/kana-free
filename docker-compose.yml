@@ -1,0 +1,7 @@
+services:
+  kana-free:
+    build: .
+    container_name: kana-free
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
