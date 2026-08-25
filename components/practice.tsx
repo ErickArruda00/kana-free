@@ -4,9 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import KanaCharts from "@/components/kana-chart";
 import { kanaByMode, type KanaMode } from "@/data/kana";
 
-function pickChar(dict: Record<string, string>, avoid?: string) {
-  const keys = Object.keys(dict);
-  if (keys.length <= 1) return keys[0] ?? "";
+function pickChar(
+  dict: Record<string, string>,
+  avoid?: string,
+  exclude?: Set<string>,
+) {
+  let keys = Object.keys(dict);
+  if (exclude && exclude.size > 0) {
+    keys = keys.filter((key) => !exclude.has(key));
+  }
+  if (keys.length === 0) return "";
+  if (keys.length === 1) return keys[0];
   let next = keys[Math.floor(Math.random() * keys.length)];
   while (next === avoid) {
     next = keys[Math.floor(Math.random() * keys.length)];
@@ -35,7 +43,11 @@ export default function Practice() {
     hiragana: false,
     katakana: false,
   });
+  const [repeatCorrect, setRepeatCorrect] = useState(true);
   const [activeModes, setActiveModes] = useState<KanaMode[] | null>(null);
+  const [activeRepeatCorrect, setActiveRepeatCorrect] = useState(true);
+  const [solved, setSolved] = useState<Set<string>>(() => new Set());
+  const [done, setDone] = useState(false);
   const [char, setChar] = useState("");
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState<"idle" | "correct" | "wrong">(
@@ -59,14 +71,16 @@ export default function Practice() {
     setFeedback("idle");
     setCorrectCount(0);
     setTotalCount(0);
+    setSolved(new Set());
+    setDone(false);
     queueMicrotask(() => inputRef.current?.focus());
   }, [activeModes]);
 
   useEffect(() => {
-    if (dict && feedback === "idle") {
+    if (dict && !done && feedback === "idle") {
       inputRef.current?.focus();
     }
-  }, [char, dict, feedback]);
+  }, [char, dict, feedback, done]);
 
   function toggle(mode: KanaMode) {
     setSelected((prev) => ({ ...prev, [mode]: !prev[mode] }));
@@ -74,6 +88,7 @@ export default function Practice() {
 
   function start() {
     if (!canStart) return;
+    setActiveRepeatCorrect(repeatCorrect);
     setActiveModes(selectedModes);
   }
 
@@ -84,18 +99,28 @@ export default function Practice() {
     setFeedback("idle");
     setCorrectCount(0);
     setTotalCount(0);
+    setSolved(new Set());
+    setDone(false);
   }
 
-  function advance() {
+  function advance(nextSolved: Set<string>) {
     if (!dict) return;
-    setChar(pickChar(dict, char));
+    const exclude = activeRepeatCorrect ? undefined : nextSolved;
+    const next = pickChar(dict, char, exclude);
+    if (!next) {
+      setDone(true);
+      setFeedback("idle");
+      setAnswer("");
+      return;
+    }
+    setChar(next);
     setAnswer("");
     setFeedback("idle");
   }
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (!dict || !char || feedback !== "idle") return;
+    if (!dict || !char || feedback !== "idle" || done) return;
 
     const expected = dict[char];
     const ok = normalize(answer) === expected;
@@ -103,8 +128,14 @@ export default function Practice() {
     setTotalCount((n) => n + 1);
     if (ok) setCorrectCount((n) => n + 1);
 
+    const nextSolved = new Set(solved);
+    if (ok && !activeRepeatCorrect) {
+      nextSolved.add(char);
+      setSolved(nextSolved);
+    }
+
     window.setTimeout(() => {
-      advance();
+      advance(nextSolved);
     }, ok ? 450 : 900);
   }
 
@@ -135,6 +166,27 @@ export default function Practice() {
               Katakana
             </button>
           </div>
+          <div className="option-block">
+            <p className="option-label">Repetir</p>
+            <div className="cta-row is-tight" role="group" aria-label="Repetição">
+              <button
+                type="button"
+                className={`choice ${repeatCorrect ? "is-selected" : ""}`}
+                aria-pressed={repeatCorrect ? "true" : "false"}
+                onClick={() => setRepeatCorrect(true)}
+              >
+                Sim
+              </button>
+              <button
+                type="button"
+                className={`choice ${!repeatCorrect ? "is-selected" : ""}`}
+                aria-pressed={!repeatCorrect ? "true" : "false"}
+                onClick={() => setRepeatCorrect(false)}
+              >
+                Não
+              </button>
+            </div>
+          </div>
           <button
             type="button"
             className={`cta ${canStart ? "" : "is-disabled"}`}
@@ -149,7 +201,32 @@ export default function Practice() {
     );
   }
 
+  if (done) {
+    return (
+      <div className="session">
+        <header className="session-bar">
+          <button type="button" className="back" onClick={goHome}>
+            Voltar
+          </button>
+          <p className="mode-label">{labelFor(activeModes)}</p>
+          <p className="score">
+            {correctCount}/{totalCount}
+          </p>
+        </header>
+        <p className="done-title">Sessão completa</p>
+        <p className="done-text">Você acertou todos os caracteres desta rodada.</p>
+        <button type="button" className="cta" onClick={goHome}>
+          Voltar ao início
+        </button>
+      </div>
+    );
+  }
+
   const expected = dict[char];
+  const remaining =
+    activeRepeatCorrect || !dict
+      ? null
+      : Object.keys(dict).length - solved.size;
 
   return (
     <div className="session">
@@ -160,6 +237,7 @@ export default function Practice() {
         <p className="mode-label">{labelFor(activeModes)}</p>
         <p className="score">
           {correctCount}/{totalCount}
+          {remaining !== null ? ` · ${remaining}` : ""}
         </p>
       </header>
 

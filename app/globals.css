@@ -264,6 +264,44 @@ body {
   margin-top: 1.25rem;
 }
 
+.cta-row.is-tight {
+  margin-top: 0.55rem;
+}
+
+.option-block {
+  margin-top: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
+}
+
+.option-label {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 560;
+  letter-spacing: 0.04em;
+  color: color-mix(in oklab, var(--ink) 55%, transparent);
+  text-align: center;
+}
+
+.done-title {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  text-align: center;
+}
+
+.done-text {
+  margin: 0;
+  color: color-mix(in oklab, var(--ink) 65%, transparent);
+  text-align: center;
+  line-height: 1.5;
+}
+
 .choice {
   appearance: none;
   border: 0;
