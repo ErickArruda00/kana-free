@@ -1,19 +1,35 @@
 # Kana Free
 
-App to practice **hiragana** and **katakana**: a Japanese character appears and you type its sound in romaji.
+Web app for practicing **hiragana** and **katakana**: a Japanese character appears and you type its sound in romaji.
 
-No login and no saved progress — everything runs in the browser.
+No account, no saved progress — everything runs in the browser.
+
+---
 
 ## Features
 
-- Choose hiragana, katakana, or both
-- Option to repeat or skip characters you already got right in the session
-- Interactive charts with romaji on hover
-- Accent columns (dakuten/handakuten) that expand on mouse over
+- Practice hiragana, katakana, or both in the same session
+- Option to repeat or skip characters you already got right
+- Instant feedback with the correct answer on mistakes
+- Score counter during the session
+- Interactive charts with romaji on hover / focus
+- Accent columns (dakuten / handakuten) that expand on hover
+- UI in English and Portuguese (Brazil)
 
-## Local development
+---
 
-Requirements: Node.js 20+ and npm.
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) 20 or later
+- npm (bundled with Node.js)
+
+For Docker: [Docker](https://www.docker.com/) and Docker Compose.
+
+---
+
+## Getting started
+
+### Local development
 
 ```bash
 npm install
@@ -22,17 +38,24 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-Other commands:
+### Production build
 
 ```bash
-npm run build   # production build
-npm run start   # run the local production build
-npm run lint    # ESLint
+npm run build
+npm run start
 ```
+
+### Linting
+
+```bash
+npm run lint
+```
+
+---
 
 ## Docker
 
-The container starts the app automatically on port 3000:
+Multi-stage image with a Next.js standalone build. The container serves the app on port **3000**:
 
 ```bash
 docker compose up --build -d
@@ -46,9 +69,27 @@ To stop:
 docker compose down
 ```
 
+---
+
 ## Stack
 
-- [Next.js](https://nextjs.org) 16
-- React 19
-- TypeScript
-- Tailwind CSS 4
+| Technology | Role |
+| --- | --- |
+| [Next.js](https://nextjs.org/) 16 | React framework (App Router) |
+| [React](https://react.dev/) 19 | UI |
+| [TypeScript](https://www.typescriptlang.org/) | Static typing |
+| [Tailwind CSS](https://tailwindcss.com/) 4 | Styling |
+| Docker | Container deployment |
+
+---
+
+## Project structure
+
+```
+app/                 # Routes and layout (Next.js App Router)
+components/          # Practice UI and kana charts
+data/                # Kana data, charts, and i18n
+public/              # Static assets
+Dockerfile           # Multi-stage build (standalone)
+docker-compose.yml   # Local orchestration
+```
